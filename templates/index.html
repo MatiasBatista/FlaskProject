@@ -28,15 +28,27 @@
     </article>
    <article id="art1">
         <header>
-           <h1><b>CARGAMOS CUSTOMER A LA BD:</b></h1> 
+           <h1><b>CARGAMOS PERSONAS A LA BD:</b></h1> 
         </header>
         <form>
             <input type="number" id="telefono">Ingresa el telefono de la persona:<br>
             <input type="text" id="nombre">Ingrese el nombre de la persona: <br>
             <input type="text" id="apellido"> Ingrese el apellido de la persona:
-            <button type="button" onclick="registrarCustomer()">Aceptar</button>
+            <button type="button" onclick="gestionPersonas()">Aceptar</button>
         </form>
+        <br>
+        <br>
    </article>
+   <article id="art2">
+    <button type="button" onclick="muestraPersonas()">Click para mostrar personsa en tabla</button>
+   </article>
+   <div id="divEliminar">
+        <header>ELIMINAR PERSONAS DE LA BD:</header>
+        <form>
+            <input type="text" placeholder="Ingrese telefono a eliminar" id="eliminar-persona">
+            <button type="button" onclick="eliminarPersona()">Aceptar</button>
+        </form>
+   </div>
   
 </div>
 
@@ -61,7 +73,7 @@
 
 
     function devolverCustomer(){
-
+        console.log("Entro")
         var idP=document.getElementById("p").value;
 
             $.ajax({
@@ -105,37 +117,160 @@
 
 
     function  registrarCustomer(){
-    var nom=String(document.getElementById("nombre").value);
-    var tel=Number(document.getElementById("telefono").value);
-    var ape=String(document.getElementById("apellido").value);
+        var nom=String(document.getElementById("nombre").value);
+        var tel=Number(document.getElementById("telefono").value);
+        var ape=String(document.getElementById("apellido").value);
+        if (nom!='' & ape!='' & tel!=''){
+            var customer= {
+                telefono : tel,
+                nombre : nom,
+                apellido: ape 
+            };
+            $.ajax({
+                url: "http://127.0.0.1:5000/api/customers",
+                data: customer,
+                type: "POST",
+                success: function (respuesta) { 
+                    alert("Persona guardada con exito!!!")
+                    location.reload();
+                },
+
+                error: function(req, status, err) {
+
+                    alert("Error al guardar persona!!")
+                },
+
+
+        });}
+        else{
+            alert("Debe ingresar todos los campos!!!")
+        }
+        }
+
+
+    function  modificarCustomer(){
+        var nom=String(document.getElementById("nombre").value);
+        var tel=Number(document.getElementById("telefono").value);
+        var ape=String(document.getElementById("apellido").value);
+        if (nom!='' & ape!='' & tel!=''){
+            var customer= {
+                telefono : tel,
+                nombre : nom,
+                apellido: ape 
+            };
+            $.ajax({
+                url: "http://127.0.0.1:5000/api/customers",
+                data: customer,
+                type: "PUT",
+                success: function (respuesta) { 
+                    alert("Persona modificada con exito!!!")
+                    location.reload();
+                },
+
+                error: function(req, status, err) {
+
+                    alert("Error al modificar persona en la BD!!")
+                },
+
+
+        });}
+        else{
+            alert("Debe ingresar todos los campos!!!")
+        }
         
-    var customer= {
-            telefono : tel,
-            nombre : nom,
-            apellido: ape 
-        };
+    }  
 
 
-
+function eliminarPersona(){
+    var $telElim=Number(document.getElementById("eliminar-persona").value)
     $.ajax({
-        url: "http://127.0.0.1:5000/api/customers",
-        data: customer,
-        type: "POST",
-        success: function (respuesta) { 
-            alert("Customer Guardado con exito!!!")
-            location.reload();
+        url : `http://127.0.0.1:5000/api/personas/${$telElim}`,
+        method: "GET",
+        dataType: "json",
+        success:function(response) {
+            console.log(response);
+            if( response!=[]){
+                $.ajax({
+                    url : `http://127.0.0.1:5000/api/customers/${$telElim}`,
+                    method: "DELETE",
+                    success:function(response) { 
+                        alert("Persona elimnada con exito")
+                    }
+
+                });
+
+            }
+            else{
+                alert("Ninguna persona esta registrada con ese telefono")
+            }
+        },
+
+        error: function(req, status, err) {
+
+        console.log(req, status, err)
+        },
+
+        });
+
+}
+     
+function muestraPersonas(){
+    var $tt=document.getElementById("art2")
+    $.ajax({
+        url: "http://127.0.0.1:5000/api/personas",
+        type: "GET",
+        dataType: "json",
+        success: function (respuesta) {
+            var html="<table border='1px'>"
+                html+="<thead>"
+                html+="<td>Telefono<td>"
+                html+="<td>Nombre<td>"
+                html+="<td>Apellido<td>"
+                html+="</thead>"
+                html+="<tbody>"    
+            for (var i=0; i< respuesta.length; i++){
+                html+="<tr>"
+                html+="<td>" + respuesta[i].telefono + "<td>" 
+                html+="<td>" + respuesta[i].nombre + "<td>"
+                html+="<td>" + respuesta[i].apellido + "<td>"      
+                html+="<tr>"
+                }
+                html+="</tbody>"
+            $tt.innerHTML=html;
         },
 
         error: function(req, status, err) {
 
             alert("El customer ya existe en la BD!!")
-        },
+            },
+
+    })
+}
+    
 
 
-    });}
-           
+function gestionPersonas(){
+    var $tel=Number(document.getElementById("telefono").value)
+    $.ajax({
+        url : `http://127.0.0.1:5000/api/personas/${$tel}`,
+        method: "GET",
+        dataType: "json",
+        success:function(response) {
+            console.log(response)
+            if( response=[]){
+                registrarCustomer();
+            }
+            else {
+                modificarCustomer();
+            } },
 
+        error: function(req, status, err) {
 
+            alert("Error al procesar el pedido!!")
+            },
+
+        })
+}
 
 
 </script>

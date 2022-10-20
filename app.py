@@ -30,6 +30,33 @@ def getAllCustomers():
         result.append(content)
     return jsonify(result)
 
+
+@app.route("/api/personas")
+def getAllPersonas():
+    cur = mysql.connection.cursor()
+    cur.execute('SELECT * FROM personas')
+    data = cur.fetchall()
+    resultado=[]
+    for i in data:
+        contenido={
+            'telefono':i[0],
+            'nombre': i[1],
+            'apellido': i[2]
+        }
+        resultado.append(contenido)
+    return jsonify(resultado);
+
+
+@app.route('/api/personas/<telefono>')
+@cross_origin()
+def getPersona(telefono):
+    cur = mysql.connection.cursor()
+    cur.execute('SELECT * from personas where telefono=' + str(telefono))
+    data = cur.fetchall()
+    return jsonify(data)
+
+
+
 @app.route('/api/customers/<id>')
 @cross_origin()
 def getCustomer(id):
@@ -51,6 +78,14 @@ def getCustomer(id):
     #return "ok"
 
 
+@app.route('/api/customers/<int:telefono>', methods=['DELETE'])
+@cross_origin()
+def eliminarCliente(telefono):
+    cur = mysql.connection.cursor()
+    cur.execute("delete from personas where telefono=" + str(telefono))
+    mysql.connection.commit()
+    return "Cliente Eliminado"
+
 @app.route('/api/customers', methods=['POST'])
 @cross_origin()
 def cargarCliente():
@@ -64,10 +99,9 @@ def cargarCliente():
 @cross_origin()
 def modificarCliente():
     cur = mysql.connection.cursor()
-    cur.execute("update personas set telefono=%s, nombre=%s, apellido=%s where telefono=%s",(request.json['telefono'],request.json['nombre'],request.json['apellido'],request.json['telefono']))
+    cur.execute("update personas set telefono=%s, nombre=%s, apellido=%s where telefono=%s",(request.form['telefono'],request.form['nombre'],request.form['apellido'],request.form['telefono']))
     mysql.connection.commit()
     return "Cliente Modificado"
-
 
 
 
@@ -78,4 +112,4 @@ def index():
     return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(None, 3000, True)
+    app.run(None, 5000, True)
