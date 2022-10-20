@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="http://code.jquery.com/jquery-1.11.2.min.js" type="text/javascript"></script>
+</head>
+
+<!--<div id="div1">
+
+    <form id="forms">
+
+        <input type="number" id="numero1">1erNumero:
+        <input type="number" id="numero2">2doNumero:
+        <button id="b1">ACEPTAR</button>
+    </form>
+</div> -->
+
+<div id="div2">
+    <article id="art">
+        <header>
+            <h1><b>PEDIMOS Y CONSUMIMOS UN CUSTOMER DE LA BD:</b></h1>
+        </header>
+        <form >
+            <input type="text" id="p">Ingrese un id de customer:<br>
+            <button type="button" onclick="devolverCustomer()">Buscar</button><br><br><br>
+        </form>
+    </article>
+   <article id="art1">
+        <header>
+           <h1><b>CARGAMOS CUSTOMER A LA BD:</b></h1> 
+        </header>
+        <form>
+            <input type="number" id="telefono">Ingresa el telefono de la persona:<br>
+            <input type="text" id="nombre">Ingrese el nombre de la persona: <br>
+            <input type="text" id="apellido"> Ingrese el apellido de la persona:
+            <button type="button" onclick="registrarCustomer()">Aceptar</button>
+        </form>
+   </article>
+  
+</div>
+
+
+<script>
+
+
+
+
+    /*document.getElementById("b1").addEventListener("click", suma);    
+   
+    function suma(){
+
+        var num1 = Number(document.getElementById("numero1").value);
+        var num2 = Number(document.getElementById("numero2").value);
+        var resp= "La suma de ambos numeros es :" + (num1+num2);
+        var html=resp + "<br>";
+        html+= "<a href='index.html'> Volver Atrás</a>";
+        document.getElementById("div1").innerHTML=html;
+
+    } */
+
+
+    function devolverCustomer(){
+
+        var idP=document.getElementById("p").value;
+
+            $.ajax({
+
+                url : `http://127.0.0.1:5000/api/customers/${idP}`,
+                method: "GET",
+                dataType: "json",
+                success:function(response) {
+
+                    if( response == ''){
+                        var html="No existe dicho id en la BD"+ "<br>";
+                        html+= "<br>" +"<a href='index.html'> Volver Atrás</a>";
+                        document.getElementById("art").innerHTML=html;
+
+                    }
+                    else{
+                        console.log(response);
+                        imprimirPersona(response);
+                    }
+                },
+
+                error: function(req, status, err) {
+
+                console.log(req, status, err)
+                },
+
+                });
+            }
+
+
+    function imprimirPersona(response){
+        var html= "nombre:"+ response[0][1]+ "<br>";
+        html+= "<br>" +"<a href='index.html'> Volver Atrás</a>";
+        document.getElementById("art").innerHTML=html;
+    }
+
+
+
+
+
+
+
+    function  registrarCustomer(){
+    var nom=String(document.getElementById("nombre").value);
+    var tel=Number(document.getElementById("telefono").value);
+    var ape=String(document.getElementById("apellido").value);
+        
+    var customer= {
+            telefono : tel,
+            nombre : nom,
+            apellido: ape 
+        };
+
+
+
+    $.ajax({
+        url: "http://127.0.0.1:5000/api/customers",
+        data: customer,
+        type: "POST",
+        success: function (respuesta) { 
+            alert("Customer Guardado con exito!!!")
+            location.reload();
+        },
+
+        error: function(req, status, err) {
+
+            alert("El customer ya existe en la BD!!")
+        },
+
+
+    });}
+           
+
+
+
+
+</script>
+
+</body>
+
+</html>
